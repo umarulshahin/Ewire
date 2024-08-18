@@ -6,16 +6,16 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 
 class CustomUserManager(BaseUserManager):
     
-    def create_user(self, Email, password=None, **extra_fields):
+    def create_user(self,Username, Email, password=None, **extra_fields):
         if not Email:
             raise ValueError('The Email field must be set')
         email = self.normalize_email(Email)
-        user = self.model(Email=email, **extra_fields)
+        user = self.model(Username=Username,Email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, Email, password=None, **extra_fields):
+    def create_superuser(self,Username, Email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
 
@@ -24,7 +24,7 @@ class CustomUserManager(BaseUserManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
 
-        return self.create_user(Email, password, **extra_fields)
+        return self.create_user(Email,Username, password, **extra_fields)
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     
@@ -38,7 +38,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     objects = CustomUserManager()
 
-    USERNAME_FIELD = 'Email'
+    USERNAME_FIELD = 'Username'
     REQUIRED_FIELDS = []
 
     def __str__(self):

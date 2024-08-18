@@ -2,6 +2,8 @@ from rest_framework import serializers
 from .models import *
 import re
 from django.core.exceptions import ValidationError
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import authenticate
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -31,7 +33,7 @@ class UserSerializer(serializers.ModelSerializer):
             return attrs
            
     def create(self, validated_data):
-        print(validated_data,'validate data')
+        
         user = CustomUser.objects.create_user(
             Name=validated_data['Name'],
             Username=validated_data['Username'],
@@ -41,3 +43,25 @@ class UserSerializer(serializers.ModelSerializer):
         )
         user.save()
         return user
+
+class CustomTokenSerializer(serializers.Serializer):
+    Username = serializers.CharField()
+    password = serializers.CharField()
+
+    def validate(self, data):
+        username = data.get('Username')
+        password = data.get('password')
+  
+        user = authenticate(Username=username,password=password)
+        if user is None or not user.is_active:
+            raise serializers.ValidationError("Invalid username or password, or user not active.")
+            
+        refresh = RefreshToken.for_user(user)
+        refresh['username'] = user.Username
+
+        return {
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+                'username': user.Username,
+            }
+        
