@@ -11,11 +11,11 @@ urlpatterns = [
     
   path('token/refresh/',TokenRefreshView.as_view(), name='token_refresh'),
   
-  path('Authentication/',Authentication.as_view(),name='signup'),
+  path('Authentication/',Authentication.as_view(),name='Authentication'),
   
   path('userpost/',UserPost.as_view(),name='userpost'),
   
+  path('postlike/',PostLIkeView.as_view(),name='postlike'),
+  
 
-  
-  
 ]

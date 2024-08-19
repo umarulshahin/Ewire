@@ -25,7 +25,6 @@ class UserPost(APIView):
             if serializer.is_valid():
                 serializer.save()
                 post_id = serializer.data['id']
-                print(post_id)
                 
                 if data['tag']:
                     
@@ -80,4 +79,59 @@ class UserPost(APIView):
         
         return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         
-                
+            
+    def get(self,request):
+        
+        posts = Post.objects.filter(publish=True).order_by('-save_date')
+        serializer=PostSerializer(posts, many=True)
+                    
+        return Response({'success':serializer.data})
+
+class PostLIkeView(APIView):
+    
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    
+    def post(self,request):
+        
+        data = request.data
+        user = request.user
+        
+        try:
+            
+           post = Post.objects.get(id=data['post'])
+        except Post.DoesNotExist:
+            return Response({'error': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        if Like.objects.filter(post=post,users=user).exists():
+            return Response({'error': 'You have already liked this post'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        postdata={
+            "post":post.id,
+            "users":user.id
+        }
+        
+        serializer = PostLikeSerializer(data=postdata)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'success':serializer.data})
+        return Response({'error' : serializer.errors})
+    
+    def delete(self,request):
+        
+        data = request.data
+        user = request.user
+        
+        try:
+            
+            like = Like.objects.get(post=data['post'],users=user.id)
+            post = like.post
+            like.delete()
+            like_count = Like.objects.filter(post=post).count()
+            
+            return Response({'success': 'Post unliked successfully','like_count':like_count}, status=status.HTTP_204_NO_CONTENT)
+           
+
+        except Like.DoesNotExist:
+            
+            return Response({'error': 'You have not liked this post'}, status=status.HTTP_400_BAD_REQUEST)

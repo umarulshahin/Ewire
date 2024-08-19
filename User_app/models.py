@@ -10,6 +10,8 @@ class Post(models.Model):
     description = models.TextField(blank=True)
     save_date = models.DateTimeField(default=timezone.now)
     publish = models.BooleanField(default=True,blank=False)
+            
+        
     
 class User_Tag(models.Model):
     
@@ -22,4 +24,15 @@ class User_Tag(models.Model):
     def __str__(self):
         return f"{self.post.title} - {self.users.Username}"
     
+class Like(models.Model):
+    
+    users = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
+    post = models.ForeignKey(Post,on_delete=models.CASCADE)
+    created_at = models.DateTimeField(default=timezone.now)
+    
+    class Meta:
+        unique_together = ('users', 'post')
+
+    def __str__(self):
+        return f"{self.users.Username} likes {self.post.title}"
     
