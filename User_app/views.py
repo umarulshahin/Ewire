@@ -26,7 +26,7 @@ class UserPost(APIView):
                 serializer.save()
                 post_id = serializer.data['id']
                 
-                if data['tag']:
+                if 'tag' in data and data['tag']:
                     
                     for user in data['tag']:
                         try:
@@ -36,13 +36,11 @@ class UserPost(APIView):
                                 "post": post_id
                             }
                             
-                            print(tagData)
                             
                             tagSerializer = TaguserSerializer(data=tagData)   
                             
                             if tagSerializer.is_valid():
                                 tagSerializer.save()
-                                print(tagSerializer.data)
                                 
                             else:
                                 return Response({'error' : tagSerializer.errors})
@@ -99,7 +97,7 @@ class PostLIkeView(APIView):
         
         try:
             
-           post = Post.objects.get(id=data['post'])
+           post = Post.objects.get(id=data['id'])
         except Post.DoesNotExist:
             return Response({'error': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
         
@@ -124,7 +122,7 @@ class PostLIkeView(APIView):
         
         try:
             
-            like = Like.objects.get(post=data['post'],users=user.id)
+            like = Like.objects.get(post=data['id'],users=user.id)
             post = like.post
             like.delete()
             like_count = Like.objects.filter(post=post).count()
